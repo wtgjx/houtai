@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>风险预警中心 - 心瞳管理后台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1a202c;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 左侧导航 */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            color: #2d3748;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .logo-subtitle {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .logo-subtitle {
+            display: none;
+        }
+
+        .nav-section {
+            margin: 16px 0;
+        }
+
+        .nav-section-title {
+            padding: 12px 20px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #a0aec0;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar.collapsed .nav-section-title {
+            display: none;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            margin: 4px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .nav-item span {
+            display: none;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 24px;
+            right: -15px;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            background: transparent;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 16px 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .breadcrumb i {
+            margin-right: 8px;
+            color: #667eea;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .sidebar {
+                width: 85%;
+                max-width: 280px;
+                transform: translateX(-100%);
+                box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 1010;
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
+            .toggle-btn {
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                right: auto;
+                z-index: 1002;
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                border: 2px solid rgba(255, 255, 255, 0.8);
+            }
+
+            .header {
+                padding: 16px 16px 16px 60px;
+                flex-wrap: wrap;
+                position: sticky;
+                top: 0;
+                background-color: rgba(255, 255, 255, 0.9);
+                backdrop-filter: blur(20px);
+                z-index: 100;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+
+            .breadcrumb {
+                font-size: 12px;
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .user-menu {
+                margin-left: auto;
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+
+            .content {
+                padding: 20px 12px;
+            }
+
+            /* 统计卡片响应式 */
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-card h3 {
+                font-size: 14px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            /* 筛选栏响应式 */
+            .filter-bar {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .export-btn {
+                width: 100%;
+                margin-top: 12px;
+            }
+
+            /* 预警列表响应式 */
+            .alert-list {
+                padding: 16px;
+            }
+
+            .alert-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -12px;
+                padding: 0 12px;
+            }
+
+            .alert-table {
+                min-width: 800px;
+                font-size: 12px;
+            }
+
+            .alert-table th,
+            .alert-table td {
+                padding: 8px 6px;
+                white-space: nowrap;
+            }
+
+            .alert-level {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+
+            .action-btn {
+                padding: 4px 8px;
+                font-size: 11px;
+                margin: 2px;
+            }
+
+            /* 分页响应式 */
+            .pagination {
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: center;
+            }
+
+            .pagination button {
+                min-width: 36px;
+                height: 36px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 12px 12px 12px 50px;
+            }
+
+            .toggle-btn {
+                top: 12px;
+                left: 12px;
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
+            .user-menu {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            .user-menu span {
+                max-width: 80px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+                min-width: 28px;
+            }
+
+            .content {
+                padding: 16px 8px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .filter-bar {
+                padding: 12px;
+            }
+
+            .alert-list {
+                padding: 12px;
+            }
+
+            .alert-table {
+                font-size: 11px;
+            }
+
+            .action-btn {
+                padding: 3px 6px;
+                font-size: 10px;
+            }
+
+            /* 增强触摸区域 */
+            .nav-item, .user-menu, .action-btn {
+                min-height: 44px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .header {
+                padding: 10px 10px 10px 46px;
+            }
+
+            .toggle-btn {
+                top: 10px;
+                left: 10px;
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .content {
+                padding: 12px 6px;
+            }
+
+            .stat-card h3 {
+                font-size: 12px;
+            }
+
+            .stat-value {
+                font-size: 18px;
+            }
+
+            .alert-table {
+                font-size: 10px;
+            }
+        }
+
+        .user-avatar {
+            justify-content: center;
+        }
+
+        .content {
+            padding: 32px;
+        }
+
+        /* 筛选器样式 */
+        .filter-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            min-width: 140px;
+        }
+
+        .filter-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        /* 数据表格样式 */
+        .table-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .table-header i {
+            color: #667eea;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: rgba(248, 250, 252, 0.8);
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .data-table tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .alert-level {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .alert-red {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .alert-yellow {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .status-processing {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        .status-closed {
+            background: rgba(34, 197, 94, 0.1);
+            color: #16a34a;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .pagination {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(248, 250, 252, 0.5);
+        }
+
+        .pagination-info {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                transform: translateX(-100%);
+                box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
+            .toggle-btn {
+                position: fixed;
+                top: 24px;
+                left: 24px;
+                right: auto;
+                z-index: 1002;
+            }
+
+            .header {
+                padding: 16px 70px 16px 24px;
+            }
+
+            .content {
+                padding: 24px 16px;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .data-table {
+                font-size: 12px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航 -->
+        <nav class="sidebar" id="sidebar">
+            <button class="toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="sidebar-header">
+                <div class="logo">心瞳</div>
+                <div class="logo-subtitle">管理后台</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">运营与干预中心</div>
+                <div class="nav-item" onclick="window.location.href='index.html'">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>主看板</span>
+                </div>
+                <div class="nav-item active">
+                    <i class="fas fa-bell"></i>
+                    <span>风险预警中心</span>
+                </div>
+                <div class="nav-item" onclick="window.location.href='child-profile.html'">
+                    <i class="fas fa-user"></i>
+                    <span>儿童个体档案</span>
+                </div>
+                <div class="nav-item" onclick="window.location.href='report-center.html'">
+                    <i class="fas fa-file-alt"></i>
+                    <span>报告中心</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">系统管理与技术后台</div>
+                <div class="nav-item" onclick="window.location.href='device-management.html'">
+                    <i class="fas fa-server"></i>
+                    <span>设备管理</span>
+                </div>
+                <div class="nav-item" onclick="window.location.href='user-management.html'">
+                    <i class="fas fa-users-cog"></i>
+                    <span>用户与权限管理</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-cogs"></i>
+                    <span>数据与模型管理</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>操作审计日志</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content" id="mainContent">
+            <header class="header">
+                <div class="breadcrumb">
+                    <i class="fas fa-home"></i> 主页 / 风险预警中心
+                </div>
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span>吴桐更兼细语</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- 筛选器 -->
+                <div class="filter-section">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label class="filter-label">预警等级</label>
+                            <select class="filter-select">
+                                <option>全部等级</option>
+                                <option>红色预警</option>
+                                <option>黄色预警</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">处理状态</label>
+                            <select class="filter-select">
+                                <option>全部状态</option>
+                                <option>待处理</option>
+                                <option>处理中</option>
+                                <option>已关闭</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">开始日期</label>
+                            <input type="date" class="filter-input">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">结束日期</label>
+                            <input type="date" class="filter-input">
+                        </div>
+                        <button class="filter-btn">查询</button>
+                    </div>
+                </div>
+
+                <!-- 数据表格 -->
+                <div class="table-section">
+                    <div class="table-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        所有风险预警事件
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>儿童ID</th>
+                                <th>预警等级</th>
+                                <th>预警类型</th>
+                                <th>触发时间</th>
+                                <th>负责人</th>
+                                <th>处理状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>DC-2024-0156</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>长期独处+情绪低落</td>
+                                <td>2024-06-18 14:23</td>
+                                <td>家长#2024006</td>
+                                <td><span class="status-badge status-processing">处理中</span></td>
+                            </tr>
+                            <tr>
+                                <td>YD-2024-0089</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>睡眠质量持续下降</td>
+                                <td>2024-06-18 09:15</td>
+                                <td>家长#2024007</td>
+                                <td><span class="status-badge status-pending">待处理</span></td>
+                            </tr>
+                            <tr>
+                                <td>DC-2024-0078</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>疑似自我伤害行为</td>
+                                <td>2024-06-17 16:30</td>
+                                <td>家长#2024008</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>ZJ-2024-0234</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>学习专注度异常</td>
+                                <td>2024-06-17 20:45</td>
+                                <td>家长#2024009</td>
+                                <td><span class="status-badge status-processing">处理中</span></td>
+                            </tr>
+                            <tr>
+                                <td>YD-2024-0167</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>社交回避+饮食异常</td>
+                                <td>2024-06-17 12:20</td>
+                                <td>家长#2024001</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>DC-2024-0198</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>情绪波动剧烈+攻击倾向</td>
+                                <td>2024-06-16 15:45</td>
+                                <td>家长#2024002</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>ZJ-2024-0145</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>长时间哭泣+食欲不振</td>
+                                <td>2024-06-16 08:30</td>
+                                <td>家长#2024003</td>
+                                <td><span class="status-badge status-processing">处理中</span></td>
+                            </tr>
+                            <tr>
+                                <td>YD-2024-0123</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>严重社交恐惧+自闭倾向</td>
+                                <td>2024-06-15 19:20</td>
+                                <td>家长#2024004</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>DC-2024-0087</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>学习压力过大+焦虑</td>
+                                <td>2024-06-15 11:15</td>
+                                <td>家长#2024005</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT041</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>情绪表达困难</td>
+                                <td>2023-06-12 11:45</td>
+                                <td>未指派</td>
+                                <td><span class="status-badge status-pending">待处理</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT083</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>自我伤害倾向</td>
+                                <td>2023-06-11 19:30</td>
+                                <td>家长#2023001</td>
+                                <td><span class="status-badge status-processing">处理中</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT029</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>户外活动减少</td>
+                                <td>2023-06-11 14:15</td>
+                                <td>家长#2023002</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT064</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>极端情绪波动</td>
+                                <td>2023-06-10 20:45</td>
+                                <td>家长#2023003</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT018</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>同伴关系紧张</td>
+                                <td>2023-06-10 13:20</td>
+                                <td>未指派</td>
+                                <td><span class="status-badge status-pending">待处理</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT072</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>严重焦虑症状</td>
+                                <td>2023-06-09 16:30</td>
+                                <td>家长#2023004</td>
+                                <td><span class="status-badge status-processing">处理中</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT037</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>注意力分散</td>
+                                <td>2023-06-09 10:15</td>
+                                <td>家长#2023005</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT051</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>抑郁症状加重</td>
+                                <td>2023-06-08 18:00</td>
+                                <td>家长#2023006</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT026</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>语言表达退化</td>
+                                <td>2023-06-08 14:30</td>
+                                <td>未指派</td>
+                                <td><span class="status-badge status-pending">待处理</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT069</td>
+                                <td><span class="alert-level alert-red">红色</span></td>
+                                <td>暴力倾向增强</td>
+                                <td>2023-06-07 11:45</td>
+                                <td>家长#2023007</td>
+                                <td><span class="status-badge status-processing">处理中</span></td>
+                            </tr>
+                            <tr>
+                                <td>XT014</td>
+                                <td><span class="alert-level alert-yellow">黄色</span></td>
+                                <td>情绪调节困难</td>
+                                <td>2023-06-07 09:20</td>
+                                <td>家长#2023008</td>
+                                <td><span class="status-badge status-closed">已关闭</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            // 检查是否为移动端
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('show');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            }
+        }
+
+        // 点击外部隐藏侧边栏（仅移动端）
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            
+            if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        // 窗口大小改变时的处理
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('show');
+            } else {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+            }
+        });
+    </script>
+</body>
+</html>
