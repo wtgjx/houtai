@@ -1,0 +1,132 @@
+import * as React from "react"
+
+const MOBILE_BREAKPOINT = 768
+
+export function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const onChange = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    }
+    mql.addEventListener("change", onChange)
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    return () => mql.removeEventListener("change", onChange)
+  }, [])
+
+  return !!isMobile
+}
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft, Info } from "lucide-react"
+import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
+
+export default async function DetailedReportPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  // 模拟详细报告数据
+  const reportDetails = {
+    id: id,
+    timeRange: "09:00 - 10:00",
+    description: "孩子在进食，表现出好奇和享受",
+    mood: "开心",
+    segments: [
+      {
+        timeRange: "0:00 - 0:45",
+        behavior: "孩子在观察面条",
+        expression: "表情好奇，眼睛睁大",
+        emoji: "🔍",
+      },
+      {
+        timeRange: "0:45 - 1:30",
+        behavior: "孩子开始尝试吃面条",
+        expression: "表情期待，微笑",
+        emoji: "😊",
+      },
+      {
+        timeRange: "1:30 - 2:15",
+        behavior: "孩子享受面条的味道",
+        expression: "表情满足，频繁点头",
+        emoji: "😋",
+      },
+      {
+        timeRange: "2:15 - 3:00",
+        behavior: "孩子继续进食",
+        expression: "表情愉悦，与照顾者互动",
+        emoji: "😄",
+      },
+    ],
+    summary: "整个过程中，孩子从好奇转变为享受，最后表现出满足",
+    notes: "孩子筷子使用熟练，表达'哇这个炸酱面真好吃啊'",
+    analysis: "基于清晰的视频画面和孩子明确的表情、动作，本次分析的可信度较高",
+  }
+
+  return (
+    <div className="container px-4 py-6 mx-auto max-w-md">
+      <div className="flex items-center mb-6">
+        <Link href="/">
+          <Button variant="ghost" size="icon" className="mr-2">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <h1 className="text-xl font-bold">详细报告</h1>
+      </div>
+
+      <Card className="mb-6">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg">{reportDetails.timeRange}</CardTitle>
+            <Badge
+              variant="outline"
+              className={cn(
+                reportDetails.mood === "开心" && "bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200",
+              )}
+            >
+              {reportDetails.mood}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">{reportDetails.description}</p>
+          <Separator className="my-4" />
+
+          <h3 className="text-sm font-medium mb-3">时间段详情</h3>
+          <div className="space-y-4">
+            {reportDetails.segments.map((segment, index) => (
+              <div key={index} className="bg-gray-50 p-3 rounded-md">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-medium">{segment.timeRange}</span>
+                  <span className="text-lg">{segment.emoji}</span>
+                </div>
+                <p className="text-sm mb-1">{segment.behavior}</p>
+                <p className="text-xs text-muted-foreground">{segment.expression}</p>
+              </div>
+            ))}
+          </div>
+
+          <Separator className="my-4" />
+
+          <div className="space-y-3">
+            <div>
+              <h3 className="text-sm font-medium mb-1">行为与状态变化总结</h3>
+              <p className="text-sm text-muted-foreground">{reportDetails.summary}</p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium mb-1">值得注意的地方</h3>
+              <p className="text-sm text-muted-foreground">{reportDetails.notes}</p>
+            </div>
+
+            <div className="bg-blue-50 p-3 rounded-md flex">
+              <Info className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-blue-700">{reportDetails.analysis}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
